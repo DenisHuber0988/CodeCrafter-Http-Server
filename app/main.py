@@ -14,7 +14,7 @@ SERVER_PORT = 4221
 
 # Response
 OK_RESPONSE = b"HTTP/1.1 200 OK\r\n\r\n"
-NOT_OK_RESPONSE = b"HTTP/1.1 404 OK\r\n\r\n"
+NOT_OK_RESPONSE = b"HTTP/1.1 404 NOT FOUND\r\n\r\n"
 CRLF = "\r\n"
 
 
