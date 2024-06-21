@@ -20,12 +20,13 @@ CRLF = "\r\n"
 
 def parse_headers(data: str):
     # Split the data into its different component (part 1).
-    method, request_target, http_version, _, server, user_agent = data.split(" ")
+    requested_target = data.split(" ")[1]
 
-    if request_target == "/":
+    if requested_target == "/":
         return OK_RESPONSE
 
     return NOT_OK_RESPONSE
+
 
 def main():
 
