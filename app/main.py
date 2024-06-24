@@ -72,7 +72,6 @@ def main():
         logger.info(f"Connecting to {SERVER_HOST} on port {SERVER_PORT}")
         connection, _ = server_socket.accept()
         request = connection.recv(BUFF_SIZE).decode("utf-8")
-        print(f"{request =}")
         response = parse_buffer(request=request)
         logger.info("Sending ok response to client.")
         connection.sendto(response, (SERVER_HOST, SERVER_PORT))
