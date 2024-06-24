@@ -1,31 +1,43 @@
 import logging
 import socket
 
+from app.paths import parse_path
+from app import status_code
 
 logger = logging.getLogger("socket_server")
 
 
 # Data
 BUFF_SIZE = 1024
+CRLF = "\r\n"
 
 # Server information
 SERVER_HOST = "localhost"
 SERVER_PORT = 4221
 
-# Response
-OK_RESPONSE = b"HTTP/1.1 200 OK\r\n\r\n"
-NOT_OK_RESPONSE = b"HTTP/1.1 404 Not Found\r\n\r\n"
-CRLF = "\r\n"
+# Representation Header
+CONTENT_TYPE = "Content-Type: text/plain"
 
 
-def parse_headers(data: str):
+def construct_response(http_version, status, data):
+    # Construct the HTTP response based the information received.
+    base = f"{http_version} {status} {CRLF}"
+    content_length = len(data)
+    representation_header = f"{CONTENT_TYPE}{CRLF}Content-Length: {content_length}{CRLF}"
+    response = "".join([base, representation_header])
+    return response.encode()
+
+
+def parse_buffer(request: str):
     # Split the data into its different component (part 1).
-    requested_target = data.split(" ")[1]
+    header = request.split(CRLF)[0]
+    _, path, http_version = header.split()
 
-    if requested_target == "/":
-        return OK_RESPONSE
+    path_found, data = parse_path(path)
+    if path_found:
+        return construct_response(http_version=http_version, status=status_code.HTTP_200_OK, data=data)
 
-    return NOT_OK_RESPONSE
+    return construct_response(http_version=http_version, status=status_code.HTTP_404_NOT_FOUND, data="")
 
 
 def main():
@@ -36,10 +48,9 @@ def main():
     while True:
         # Wait for an incoming connection.
         logger.info(f"Connecting to {SERVER_HOST} on port {SERVER_PORT}")
-        connection, address = server_socket.accept()
-        data = connection.recv(BUFF_SIZE)
-        response = parse_headers(data=str(data))
-        print(f"{data = }")
+        connection, _ = server_socket.accept()
+        request = connection.recv(BUFF_SIZE).decode("utf-8")
+        response = parse_buffer(request=request)
         logger.info("Sending ok response to client.")
         connection.sendto(response, (SERVER_HOST, SERVER_PORT))
 

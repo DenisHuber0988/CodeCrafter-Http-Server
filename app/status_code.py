@@ -1,0 +1,3 @@
+# Status Code
+HTTP_200_OK = 200
+HTTP_404_NOT_FOUND = 404
