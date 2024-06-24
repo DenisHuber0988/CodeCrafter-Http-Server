@@ -13,8 +13,6 @@ PATHS = [
 def parse_path(path):
     _, endpoint, data = path.split(BASE_PATH)
 
-    print(f"{data = }")
-
     if endpoint in PATHS:
         return True, data
 

@@ -23,7 +23,7 @@ def construct_response(http_version, status, data):
     # Construct the HTTP response based the information received.
     base = f"{http_version} {status} {CRLF}"
     content_length = len(data)
-    representation_header = f"{CONTENT_TYPE}{CRLF}Content-Length: {content_length}{CRLF}"
+    representation_header = f"{CONTENT_TYPE}{CRLF}Content-Length: {content_length}{CRLF}{data}"
     response = "".join([base, representation_header])
     return response.encode()
 
