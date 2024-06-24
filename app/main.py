@@ -34,10 +34,13 @@ def construct_response(http_version: str, status: list, data: str) -> bytes:
     return response.encode()
 
 
-def get_user_agent_and_accept(request) -> tuple[str, str]:
+def get_user_agent_and_accept(request) -> tuple[str, str] | tuple[None, None]:
     # User_Agent_Header and Accept_Header appears and 2 and 3 place.
     # But for some reason (curl formatting ?), their places are sometime switched.
-    user_agent_header, accept_header = request.split(CRLF)[2], request.split(CRLF)[3]
+    try:
+        user_agent_header, accept_header = request.split(CRLF)[2], request.split(CRLF)[3]
+    except IndexError:
+        return None, None
 
     if USER_AGENT_HEADER in user_agent_header:
         return user_agent_header, accept_header
