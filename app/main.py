@@ -17,14 +17,18 @@ SERVER_PORT = 4221
 
 # Representation Header
 CONTENT_TYPE = "Content-Type: text/plain"
+CONTENT_LENGTH = "Content-Length: "
 
 
 def construct_response(http_version, status, data):
     # Construct the HTTP response based the information received.
-    base = f"{http_version} {status} {CRLF}"
-    content_length = len(data)
-    representation_header = f"{CONTENT_TYPE}{CRLF}Content-Length: {content_length}{CRLF}{data}{CRLF}"
-    response = "".join([base, representation_header])
+    code, reason = status
+    base = f"{http_version} {code} {reason}"
+    content_length = "".join([CONTENT_LENGTH, str(len(data))])
+    body = ""
+
+    headers = [base, CONTENT_TYPE, content_length, body, data]
+    response = CRLF.join([header for header in headers])
     return response.encode()
 
 

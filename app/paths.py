@@ -1,6 +1,8 @@
+TRAILING_SLASH = "/"
+
 # Accepted paths
 
-BASE_PATH = "/"
+BASE_PATH = ""  # Path '/' when trailing is removed -> split("/").
 ECHO_PATH = "echo"
 
 
@@ -11,7 +13,11 @@ PATHS = [
 
 
 def parse_path(path):
-    _, endpoint, data = path.split(BASE_PATH)
+    try:
+        _, endpoint, data = path.split(TRAILING_SLASH)
+    except ValueError:  # There is no data sent (no data to unpack)
+        _, endpoint = path.split(TRAILING_SLASH)
+        data = ""
 
     if endpoint in PATHS:
         return True, data
