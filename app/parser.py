@@ -34,14 +34,25 @@ class Parser:
         user_agent_header, accept_header = accept_header, user_agent_header  # Switching value.
         return user_agent_header, accept_header
 
+    def fetch_data(self):
+        return self.request.split(CRLF)[-1]
+
     def check_path(self, headers) -> Response:
         request_header, user_agent_header = headers
-        _, requested_path, http_version = request_header.split()
+        method, requested_path, http_version = request_header.split()
+        body = self.fetch_data() if method == "POST" else None
 
-        path = Path(requested_path=requested_path, headers=[user_agent_header], dirname=self.dirname)
+        path = Path(
+            method=method,
+            requested_path=requested_path,
+            headers=[user_agent_header],
+            dirname=self.dirname,
+            body=body,
+        )
         path_found, data = path.find_path()
         if path_found:
-            response = Response(http_version=http_version, status_code=status_code.HTTP_200_OK, data=data)
+            status = status_code.HTTP_201_OK if method == "POST" else status_code.HTTP_200_OK
+            response = Response(http_version=http_version, status_code=status, data=data)
             return response.render_response()
 
         response = Response(http_version=http_version, status_code=status_code.HTTP_404_NOT_FOUND, data="")
