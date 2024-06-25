@@ -1,34 +1,70 @@
+import pathlib
+
 TRAILING_SLASH = "/"
 
-# Accepted paths
+# Accepted endpoints
+BASE_ENDPOINT = ""  # Path '/' when trailing slash is removed -> split("/").
+ECHO_ENDPOINT = "echo"
+USER_AGENT_ENDPOINT = "user-agent"
+FILE_ENDPOINT = "files"
 
-BASE_PATH = ""  # Path '/' when trailing is removed -> split("/").
-ECHO_PATH = "echo"
-USER_AGENT_PATH = "user-agent"
-
-
-PATHS = [
-    BASE_PATH,
-    ECHO_PATH,
-    USER_AGENT_PATH
+ENDPOINTS = [
+    BASE_ENDPOINT,
+    ECHO_ENDPOINT,
+    USER_AGENT_ENDPOINT,
+    FILE_ENDPOINT
 ]
 
 
-def parse_path(path: str, headers: list) -> tuple[bool, str]:
-    try:
-        _, endpoint, data = path.split(TRAILING_SLASH)
-    except ValueError:  # There is no data sent (no data to unpack)
-        _, endpoint = path.split(TRAILING_SLASH)
-        data = ""
+class Path:
+    """
+    Check that the requested path exists, and do the right action
+    """
+    def __init__(self, requested_path: str, headers: list, dirname: str = None):
+        """
+        :param requested_path: Requested path find in the request.
+        :param headers: Headers find in the request. (User-Agent headers for the moment).
+        """
+        self.requested_path = requested_path
+        self.headers = headers
+        self.dirname = dirname
 
-    if endpoint in PATHS:
+    @staticmethod
+    def return_version(header: str) -> tuple[bool, str]:
+        # Return the version of the product (User-Agent)
+        _, version = header.split(" ")
+        return True, version
 
-        if endpoint == USER_AGENT_PATH:
-            # Return the version of the product (User-Agent)
-            user_agent_header = headers[0]
-            _, version = user_agent_header.split(" ")
-            return True, version
+    def return_file(self, filename) -> tuple[bool, str] | tuple[bool, bytes]:
+        if self.dirname is None or filename is None:
+            return False, ""
 
-        return True, data
+        file = pathlib.Path(self.dirname, filename).resolve()
+        if file.is_file():
+            return True, file.read_bytes()
 
-    return False, ""
+        return False, ""
+
+    def extract_endpoint_and_data(self) -> tuple[str, str]:
+        try:
+            _, endpoint, data = self.requested_path.split(TRAILING_SLASH)
+        except ValueError:  # There is no data in the request.
+            _, endpoint = self.requested_path.split(TRAILING_SLASH)
+            data = ""
+
+        return endpoint, data
+
+    def find_path(self) -> tuple[bool, str] | tuple[bool, bytes]:
+        endpoint, data = self.extract_endpoint_and_data()
+
+        if endpoint in ENDPOINTS:
+
+            if endpoint == USER_AGENT_ENDPOINT:
+                return self.return_version(header=self.headers[0])
+
+            if endpoint == FILE_ENDPOINT:
+                return self.return_file(filename=data)
+
+            return True, data
+
+        return False, ""
