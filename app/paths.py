@@ -59,7 +59,7 @@ class Path:
 
         return endpoint, data
 
-    def get(self, endpoint, data):
+    def get(self, endpoint, data) -> tuple[bool, str] | tuple[bool, bytes]:
         if any(ENDPOINT.get(endpoint, None) for ENDPOINT in ENDPOINTS):
             if endpoint in USER_AGENT_ENDPOINT.keys():
                 return self.return_version(header=self.headers[0])
@@ -70,7 +70,7 @@ class Path:
 
         return False, ""
 
-    def post(self, endpoint, filename) -> tuple[bool, bytes]:
+    def post(self, endpoint, filename) -> tuple[bool, str] | tuple[bool, bytes]:
         if endpoint not in FILE_ENDPOINT.keys():
             return False, ""
 
