@@ -55,6 +55,9 @@ class Path:
         return endpoint, data
 
     def find_path(self) -> tuple[bool, str] | tuple[bool, bytes]:
+        """
+        Check that the path sent in the request is registered in ENDPOINTS.
+        """
         endpoint, data = self.extract_endpoint_and_data()
 
         if endpoint in ENDPOINTS:

@@ -17,7 +17,7 @@ class Parser:
         self.request = request
         self.dirname = dirname
 
-    def get_request_header(self):
+    def get_request_header(self) -> str:
         return self.request.split(CRLF)[0]
 
     def get_user_agent_and_accept_headers(self) -> tuple[str, str] | tuple[None, None]:
@@ -34,7 +34,7 @@ class Parser:
         user_agent_header, accept_header = accept_header, user_agent_header  # Switching value.
         return user_agent_header, accept_header
 
-    def check_path(self, headers):
+    def check_path(self, headers) -> Response:
         request_header, user_agent_header = headers
         _, requested_path, http_version = request_header.split()
 
