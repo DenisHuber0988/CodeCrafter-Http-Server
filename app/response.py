@@ -54,12 +54,13 @@ class Response:
     def get_content_encoding(self):
         content_encoding_type = copy.copy(self.headers.get("HTTP_ENCODING_HEADER", None))
 
-        for index, encoding_type in enumerate(self.headers.get("HTTP_ENCODING_HEADER", None)):
-            if encoding_type not in self.SUPPORTED_ENCODING_TYPE:
-                content_encoding_type[index] = "".join([self.INVALID_SUFFIX, encoding_type])
+        if any(encoding in self.SUPPORTED_ENCODING_TYPE for encoding in self.headers.get("HTTP_ENCODING_HEADER", None)):
+            # Find the supported encoding type.
+            for encoding_type in self.headers.get("HTTP_ENCODING_HEADER", None):
+                if encoding_type not in self.SUPPORTED_ENCODING_TYPE:
+                    content_encoding_type.remove(encoding_type)
 
-        encoding_type = None if content_encoding_type == [] else content_encoding_type[0]
-        if encoding_type is not None:
+            encoding_type = None if content_encoding_type == [] else content_encoding_type[0]
             return " ".join([self.CONTENT_ENCODING_HEADER, encoding_type])
 
     def render_response(self):
