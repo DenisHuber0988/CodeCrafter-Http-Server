@@ -19,6 +19,7 @@ class Response:
 
     # List of valid encoding for the CONTENT_ENCODING_HEADER
     SUPPORTED_ENCODING_TYPE = ["gzip"]
+    INVALID_SUFFIX = "invalid-"
 
     def __init__(self, data, status_code, headers):
         """
@@ -53,9 +54,9 @@ class Response:
     def get_content_encoding(self):
         content_encoding_type = copy.copy(self.headers.get("HTTP_ENCODING_HEADER", None))
 
-        for encoding_type in self.headers.get("HTTP_ENCODING_HEADER", None):
+        for index, encoding_type in enumerate(self.headers.get("HTTP_ENCODING_HEADER", None)):
             if encoding_type not in self.SUPPORTED_ENCODING_TYPE:
-                content_encoding_type.remove(encoding_type)
+                content_encoding_type[index] = "".join([self.INVALID_SUFFIX, encoding_type])
 
         encoding_type = None if content_encoding_type == [] else content_encoding_type[0]
         if encoding_type is not None:
