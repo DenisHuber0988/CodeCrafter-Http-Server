@@ -29,6 +29,7 @@ class ConnectionHandler:
         return connection.recv(self.BUFF_SIZE).decode("utf-8")
 
     def send_response(self, connection, response) -> None:
+        logger.info(f"Sending response: ** {response} ** to the server {self.host}:{self.port}")
         connection.sendto(response, (self.host, self.port))
 
     @staticmethod

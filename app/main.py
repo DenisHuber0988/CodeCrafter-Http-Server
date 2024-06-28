@@ -20,6 +20,7 @@ def handle_connection(handler, connection):
     :return:
     """
     request = handler.read_request(connection=connection)
+    logger.info(f"Handling request: {request}.")
     parser = Parser(request=request, dirname=args.directory)
     response = parser.parse_headers()
     # Send the appropriate response to the client.
