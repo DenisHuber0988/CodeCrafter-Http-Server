@@ -93,13 +93,13 @@ class Parser:
         headers.update(body)
 
         path = Path(headers=headers, dirname=self.dirname)
-        path_found, data = path.find_path()
+        path_found, data, content_type = path.find_path()
         if path_found:
             status = status_code.HTTP_201_OK if headers["HTTP_METHOD"] == "POST" else status_code.HTTP_200_OK
-            response = Response(status_code=status, data=data, headers=headers)
+            response = Response(status_code=status, data=data, content_type=content_type, headers=headers)
             return response.render_response()
 
-        response = Response(status_code=status_code.HTTP_404_NOT_FOUND, data="", headers=headers)
+        response = Response(status_code=status_code.HTTP_404_NOT_FOUND, data="", content_type=content_type, headers=headers)
         return response.render_response()
 
     def parse_headers(self) -> Response:

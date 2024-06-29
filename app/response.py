@@ -1,4 +1,5 @@
 import copy
+import gzip
 
 from app.constant import CRLF
 from app.utils import remove_none_elements_from_list
@@ -6,7 +7,7 @@ from app.utils import remove_none_elements_from_list
 
 class Response:
     """
-    Http response with status and headers.
+    Initialize response with status and headers.
     """
 
     # Header from the request.
@@ -21,14 +22,16 @@ class Response:
     SUPPORTED_ENCODING_TYPE = ["gzip"]
     INVALID_SUFFIX = "invalid-"
 
-    def __init__(self, data, status_code, headers):
+    def __init__(self, data: str, content_type: str, status_code: tuple, headers: dict):
         """
 
         :param data: The data to return to the client.
+        :param content_type: The content_type to return in the CONTENT_TYPE_HEADER.
         :param status_code: The status of the response.
-        :param headers: Information
+        :param headers: Information received on the request.
         """
-        self.data = data
+        self.data = data.encode()
+        self.content_type = content_type
         self.status_code = status_code
         self.headers = headers
 
@@ -37,15 +40,7 @@ class Response:
         return " ".join([self.headers["HTTP_VERSION"], code, reason])
 
     def get_content_type(self):
-        content_type = ""
-
-        if isinstance(self.data, (str, int)):
-            content_type = "text/plain"
-        elif isinstance(self.data, bytes):
-            content_type = "application/octet-stream"
-            self.data = self.data.decode()
-
-        return " ".join([self.CONTENT_TYPE_HEADER, content_type])
+        return " ".join([self.CONTENT_TYPE_HEADER, self.content_type])
 
     def get_content_length(self):
         content_length = len(self.data)
@@ -66,12 +61,19 @@ class Response:
     def render_response(self):
         status_line = self.get_status_line()
         content_type = self.get_content_type()
-        content_length = self.get_content_length()
         content_encoding = self.get_content_encoding()
-        body = ""
 
-        components = remove_none_elements_from_list(
-            [status_line, content_encoding, content_type, content_length, body, self.data]
+        if content_encoding and "gzip" in content_encoding:
+            self.data = gzip.compress(self.data)
+
+        content_length = self.get_content_length()
+
+        crlf = CRLF.encode()
+        response_content = remove_none_elements_from_list([
+            status_line, content_type, content_length, content_encoding, ""]
         )
-        response = CRLF.join([component for component in components])
-        return response.encode()
+        response = CRLF.join([content for content in response_content])
+
+        response = crlf.join([response.encode(), self.data, b""])
+        return response
+

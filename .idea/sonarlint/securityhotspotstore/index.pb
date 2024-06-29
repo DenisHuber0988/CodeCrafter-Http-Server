@@ -25,5 +25,3 @@ A
 app/connection.py,5/7/57d21bbe3f414aa3e48cfeba31a561c9511dcd9f
 <
 app/utils.py,d/2/d2b046108d1c1b522dbbf815ff6124f053f98ac9
-7
-tmp/foo,b/2/b265f2ec87c4a55eb2b6b4c926e7c65f7247a27e

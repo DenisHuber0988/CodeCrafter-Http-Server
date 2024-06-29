@@ -35,7 +35,7 @@ class Path:
         self.headers = headers
         self.dirname = dirname
 
-    def return_version(self) -> tuple[bool, str]:
+    def return_version(self) -> tuple[bool, str, str]:
         # Return the version of the product (User-Agent)
         if self.headers.get("USER_AGENT_HEADER", None):
             try:
@@ -43,21 +43,21 @@ class Path:
             except ValueError:
                 version = self.headers["USER_AGENT_HEADER"].split(" ")[0]
 
-            return True, version
+            return True, version, "text/plain"
 
-        return False, ""
+        return False, "", "text/plain"
 
-    def return_file(self, filename) -> tuple[bool, str] | tuple[bool, bytes]:
+    def return_file(self, filename) -> tuple[bool, str, str] | tuple[bool, bytes, str]:
         if self.dirname is None or filename is None:
-            return False, ""
+            return False, "", "text/plain"
 
         file = pathlib.Path(self.dirname, filename).resolve()
         if file.is_file():
-            return True, file.read_bytes()
+            return True, file.read_text(), "application/octet-stream"
 
-        return False, ""
+        return False, "", "text/plain"
 
-    def get(self, endpoint) -> tuple[bool, str] | tuple[bool, bytes]:
+    def get(self, endpoint) -> tuple[bool, str, str] | tuple[bool, bytes, str]:
         data = self.headers["HTTP_PATH_DATA"]
 
         if any(ENDPOINT.get(endpoint, None) for ENDPOINT in ENDPOINTS):
@@ -66,23 +66,23 @@ class Path:
             if endpoint in FILE_ENDPOINT.keys():
                 return self.return_file(filename=data)
 
-            return True, data
+            return True, data, "text/plain"
 
-        return False, ""
+        return False, "", "text/plain"
 
-    def post(self, endpoint) -> tuple[bool, str] | tuple[bool, bytes]:
+    def post(self, endpoint) -> tuple[bool, str, str] | tuple[bool, bytes, str]:
         filename = self.headers["HTTP_PATH_DATA"]
 
         if endpoint not in FILE_ENDPOINT.keys():
-            return False, ""
+            return False, "", "text/plain"
 
         with pathlib.Path(self.dirname, filename) as file:
             data = self.headers['REQUEST_DATA']
             file.write_bytes(data.encode())
 
-        return True, data.encode()
+        return True, data, "text/plain"
 
-    def find_path(self) -> tuple[bool, str] | tuple[bool, bytes]:
+    def find_path(self) -> tuple[bool, str, str] | tuple[bool, bytes, str]:
         """
         Check that the path sent in the request is registered in ENDPOINTS.
         """
@@ -91,4 +91,4 @@ class Path:
         if handler is not None:
             return handler(endpoint=self.headers["HTTP_PATH"])
 
-        return False, ""
+        return False, "", "text/plain"
